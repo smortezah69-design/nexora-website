@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="fa" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NEXORA — Calculator</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #07060a;
+      --bg2: #0d0b12;
+      --surface: #12101a;
+      --surface2: #1a1726;
+      --border: #2a2540;
+      --text-primary: #f0e8ff;
+      --text-secondary: #a090c0;
+      --text-hint: #4a4060;
+      --gold: #c9a96e;
+      --gold-light: #e8c98a;
+      --gold-dark: #a07840;
+      --btn-num: #161320;
+      --btn-fn: #1e1a2e;
+      --btn-op: #c9a96e;
+      --radius-card: 20px;
+      --radius-pill: 980px;
+      --font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: var(--font);
+      background: var(--bg);
+      background-image:
+        radial-gradient(ellipse 70% 60% at 15% 50%, rgba(124,92,191,0.12) 0%, transparent 65%),
+        radial-gradient(ellipse 60% 50% at 85% 20%, rgba(201,169,110,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 50% 100%, rgba(124,92,191,0.07) 0%, transparent 55%);
+      color: var(--text-primary);
+    }
+
+    /* ─── HEADER ─────────────────────────────── */
+    .site-header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(7,6,10,0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 0.5px solid #2a2540;
+      padding: 0 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 52px;
+    }
+    .logo {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none;
+    }
+    .logo-circle-outer {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      border: 1.5px solid var(--gold);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .logo-circle-inner {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: var(--gold);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo-monogram {
+      font-size: 12px; font-weight: 700;
+      color: #1a1612; letter-spacing: 0; line-height: 1;
+      font-family: var(--font);
+    }
+    .logo-text-wrap { display: flex; flex-direction: column; gap: 1px; }
+    .logo-name {
+      font-size: 15px; font-weight: 300;
+      letter-spacing: 5px; color: var(--text-primary);
+      font-family: var(--font); line-height: 1;
+    }
+    .logo-sub {
+      font-size: 8px; letter-spacing: 3px;
+      color: var(--gold); font-family: var(--font);
+      text-transform: uppercase; line-height: 1; opacity: 0.7;
+    }
+    .header-nav { display: flex; gap: 2px; }
+    .nav-btn {
+      font-size: 13px; color: var(--text-secondary);
+      background: none; border: none;
+      padding: 6px 14px; border-radius: var(--radius-pill);
+      cursor: pointer; font-family: var(--font);
+      letter-spacing: -0.1px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .nav-btn:hover { background: #2e2820; color: var(--text-primary); }
+    .nav-btn.on { background: #2e2820; color: var(--gold); font-weight: 500; }
+
+    /* ─── MAIN ───────────────────────────────── */
+    .main-area {
+      min-height: calc(100vh - 52px - 44px);
+      background: var(--bg);
+      padding: 3rem 1.5rem;
+      display: flex; justify-content: center; align-items: flex-start;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 1rem;
+      width: 640px;
+      max-width: 100%;
+    }
+
+    /* ─── LEFT INFO PANEL ────────────────────── */
+    .info-panel { display: flex; flex-direction: column; gap: 1rem; }
+
+    .info-card {
+      background: var(--surface);
+      border-radius: var(--radius-card);
+      padding: 1.25rem;
+      border: 0.5px solid #2a2540;
+    }
+    .card-label {
+      font-size: 10px; font-weight: 500; color: var(--gold);
+      letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.5rem;
+      opacity: 0.8;
+    }
+    .card-value {
+      font-size: 30px; font-weight: 300;
+      color: var(--text-primary); letter-spacing: -1.2px; line-height: 1;
+      word-break: break-all;
+    }
+    .card-value.small { font-size: 16px; letter-spacing: -0.3px; word-break: break-all; }
+    .card-sub { font-size: 11px; color: var(--text-hint); margin-top: 5px; }
+
+    .history-card {
+      background: var(--surface);
+      border-radius: var(--radius-card);
+      padding: 1.25rem;
+      flex: 1;
+      border: 0.5px solid #3a3228;
+    }
+    .history-list { margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0; }
+    .history-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 7px 0;
+      border-bottom: 0.5px solid #2e2820;
+    }
+    .history-row:last-child { border-bottom: none; }
+    .history-expr { font-size: 11px; color: var(--text-hint); }
+    .history-ans { font-size: 13px; font-weight: 500; color: var(--gold-light); }
+    .no-history { font-size: 12px; color: var(--text-hint); margin-top: 4px; }
+
+    .calc-panel {
+      background: var(--surface);
+      border-radius: 22px;
+      padding: 1.5rem;
+      display: flex; flex-direction: column;
+      border: 0.5px solid #2a2540;
+      box-shadow: 0 0 60px rgba(124,92,191,0.06), 0 0 30px rgba(201,169,110,0.04);
+    }
+
+    .display-area {
+      padding: 0.5rem 0.5rem 1.5rem;
+      min-height: 110px;
+      display: flex; flex-direction: column;
+      align-items: flex-end; justify-content: flex-end;
+      border-bottom: 0.5px solid #2a2540;
+      margin-bottom: 1.25rem;
+    }
+    .disp-expr {
+      font-size: 15px; color: var(--text-hint);
+      letter-spacing: -0.3px; min-height: 22px;
+      margin-bottom: 4px; text-align: right;
+    }
+    .disp-num {
+      font-size: 52px; font-weight: 200;
+      color: var(--text-primary);
+      letter-spacing: -3px; line-height: 1;
+      text-align: right; word-break: break-all;
+      transition: font-size 0.1s;
+    }
+
+    /* ─── CIRCLE BUTTONS ─────────────────────── */
+    .btn-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .cbtn {
+      aspect-ratio: 1;
+      border-radius: 50%;
+      border: none;
+      font-size: 20px; font-weight: 400;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font);
+      letter-spacing: -0.5px;
+      transition: filter 0.12s, transform 0.1s;
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .cbtn:hover  { filter: brightness(1.15); }
+    .cbtn:active { transform: scale(0.92); filter: brightness(0.88); }
+
+    .cbtn.fn {
+      background: #1e1a2e;
+      color: var(--gold-light);
+      font-size: 16px;
+      border: 0.5px solid #3a3258;
+    }
+    .cbtn.num {
+      background: #161320;
+      color: var(--text-primary);
+      border: 0.5px solid #2a2540;
+      font-size: 20px; font-weight: 300;
+    }
+    .cbtn.op {
+      background: linear-gradient(135deg, #c9a96e 0%, #e8c98a 50%, #c9a96e 100%);
+      color: #07060a;
+      font-size: 24px; font-weight: 500;
+      border: none;
+      box-shadow: 0 4px 20px rgba(201,169,110,0.25);
+    }
+    }
+    .cbtn.op.active-op {
+      background: #f0e6d0;
+      color: var(--gold-dark);
+      box-shadow: 0 4px 20px rgba(201,169,110,0.35);
+    }
+    .cbtn.eq {
+      background: linear-gradient(135deg, #7c5cbf 0%, #9b7de0 50%, #7c5cbf 100%);
+      color: #fff;
+      font-size: 24px; font-weight: 400;
+      border: none;
+      box-shadow: 0 4px 24px rgba(124,92,191,0.35);
+    }
+
+    .cbtn.zero {
+      border-radius: var(--radius-pill);
+      grid-column: span 2;
+      aspect-ratio: unset;
+      height: 72px;
+      justify-content: flex-start;
+      padding-left: 26px;
+      font-size: 20px; font-weight: 300;
+    }
+
+    /* ─── FOOTER ─────────────────────────────── */
+    .site-footer {
+      background: rgba(7,6,10,0.92);
+      backdrop-filter: blur(20px);
+      border-top: 0.5px solid #2a2540;
+      padding: 0 2rem;
+      height: 44px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .foot-left { display: flex; align-items: center; gap: 14px; }
+    .foot-copy { font-size: 11px; color: var(--text-hint); letter-spacing: -0.1px; }
+    .foot-ver {
+      font-size: 10px; color: var(--text-hint);
+      border: 0.5px solid var(--border);
+      padding: 2px 8px; border-radius: 4px;
+    }
+    .foot-links { display: flex; gap: 16px; }
+    .foot-link {
+      font-size: 11px; color: var(--text-hint);
+      text-decoration: none; letter-spacing: -0.1px;
+      transition: color 0.15s;
+    }
+    .foot-link:hover { color: var(--gold); }
+
+    /* ─── RESPONSIVE ─────────────────────────── */
+    @media (max-width: 680px) {
+      .dashboard { grid-template-columns: 1fr; width: 100%; }
+      .info-panel { flex-direction: row; flex-wrap: wrap; }
+      .info-card, .history-card { flex: 1 1 140px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="site-header">
+  <a class="logo" href="#">
+    <div class="logo-circle-outer">
+      <div class="logo-circle-inner">
+        <span class="logo-monogram">N</span>
+      </div>
+    </div>
+    <div class="logo-text-wrap">
+      <span class="logo-name">NEXORA</span>
+      <span class="logo-sub">Calculator</span>
+    </div>
+  </a>
+  <nav class="header-nav">
+    <button class="nav-btn on" onclick="setMode(this,'Standard')">Standard</button>
+    <button class="nav-btn" onclick="setMode(this,'Scientific')">Scientific</button>
+    <button class="nav-btn" onclick="setMode(this,'History')">History</button>
+  </nav>
+</header>
+
+<!-- MAIN -->
+<div class="main-area">
+  <div class="dashboard">
+
+    <!-- Left info panel -->
+    <div class="info-panel">
+      <div class="info-card">
+        <div class="card-label">Result</div>
+        <div class="card-value" id="side-result">0</div>
+        <div class="card-sub">Last answer</div>
+      </div>
+      <div class="info-card">
+        <div class="card-label">Expression</div>
+        <div class="card-value small" id="side-expr">—</div>
+      </div>
+      <div class="history-card">
+        <div class="card-label">Recent</div>
+        <div class="history-list" id="history-list">
+          <div class="no-history">No history yet</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Calculator -->
+    <div class="calc-panel">
+      <div class="display-area">
+        <div class="disp-expr" id="disp-expr">&nbsp;</div>
+        <div class="disp-num" id="disp-num">0</div>
+      </div>
+      <div class="btn-grid">
+        <button class="cbtn fn" id="ac-btn" onclick="clearAll()">AC</button>
+        <button class="cbtn fn" onclick="toggleSign()">⁺∕₋</button>
+        <button class="cbtn fn" onclick="percent()">%</button>
+        <button class="cbtn op" id="op-div" onclick="setOp('/')">÷</button>
+
+        <button class="cbtn num" onclick="press(7)">7</button>
+        <button class="cbtn num" onclick="press(8)">8</button>
+        <button class="cbtn num" onclick="press(9)">9</button>
+        <button class="cbtn op" id="op-mul" onclick="setOp('*')">×</button>
+
+        <button class="cbtn num" onclick="press(4)">4</button>
+        <button class="cbtn num" onclick="press(5)">5</button>
+        <button class="cbtn num" onclick="press(6)">6</button>
+        <button class="cbtn op" id="op-sub" onclick="setOp('-')">−</button>
+
+        <button class="cbtn num" onclick="press(1)">1</button>
+        <button class="cbtn num" onclick="press(2)">2</button>
+        <button class="cbtn num" onclick="press(3)">3</button>
+        <button class="cbtn op" id="op-add" onclick="setOp('+')">+</button>
+
+        <button class="cbtn num zero" onclick="press(0)">0</button>
+        <button class="cbtn num" onclick="pressDot()">.</button>
+        <button class="cbtn eq" onclick="calculate()">=</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="foot-left">
+    <span class="foot-copy">© 2025 Calculator</span>
+    <span class="foot-ver">v2.1</span>
+  </div>
+  <div class="foot-links">
+    <a href="#" class="foot-link">Privacy</a>
+    <a href="#" class="foot-link">Terms</a>
+    <a href="#" class="foot-link">Contact</a>
+  </div>
+</footer>
+
+<script>
+  let current = '0', operator = null, prev = null, fresh = false;
+  const dispNum    = document.getElementById('disp-num');
+  const dispExpr   = document.getElementById('disp-expr');
+  const sideResult = document.getElementById('side-result');
+  const sideExpr   = document.getElementById('side-expr');
+  const histList   = document.getElementById('history-list');
+  const opBtns     = { '/': 'op-div', '*': 'op-mul', '-': 'op-sub', '+': 'op-add' };
+  let historyItems = [];
+
+  function update() {
+    // shrink font for long numbers
+    dispNum.style.fontSize = current.length > 10 ? '32px' : '52px';
+    dispNum.textContent = current;
+    sideResult.textContent = current;
+  }
+
+  function clearOpHighlight() {
+    Object.values(opBtns).forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('active-op');
+    });
+  }
+
+  function press(n) {
+    clearOpHighlight();
+    if (fresh) { current = String(n); fresh = false; }
+    else current = current === '0' ? String(n) : current + n;
+    update();
+  }
+
+  function pressDot() {
+    if (fresh) { current = '0.'; fresh = false; }
+    else if (!current.includes('.')) current += '.';
+    update();
+  }
+
+  function clearAll() {
+    current = '0'; operator = null; prev = null;
+    dispExpr.innerHTML = '&nbsp;';
+    sideExpr.textContent = '—';
+    document.getElementById('ac-btn').textContent = 'AC';
+    clearOpHighlight();
+    update();
+  }
+
+  function toggleSign() { current = String(parseFloat(current) * -1); update(); }
+  function percent()    { current = String(parseFloat(current) / 100); update(); }
+
+  function setOp(op) {
+    clearOpHighlight();
+    const btn = document.getElementById(opBtns[op]);
+    if (btn) btn.classList.add('active-op');
+    prev = parseFloat(current); operator = op;
+    const s = op === '*' ? '×' : op === '/' ? '÷' : op;
+    dispExpr.textContent = prev + ' ' + s;
+    sideExpr.textContent = prev + ' ' + s;
+    document.getElementById('ac-btn').textContent = 'C';
+    fresh = true;
+  }
+
+  function calculate() {
+    if (!operator || prev === null) return;
+    const cur = parseFloat(current);
+    let r;
+    if      (operator === '+') r = prev + cur;
+    else if (operator === '-') r = prev - cur;
+    else if (operator === '*') r = prev * cur;
+    else if (operator === '/') r = cur !== 0 ? prev / cur : 'Error';
+    const s = operator === '*' ? '×' : operator === '/' ? '÷' : operator;
+    const exprStr = prev + ' ' + s + ' ' + cur;
+    dispExpr.textContent = exprStr + ' =';
+    sideExpr.textContent = exprStr;
+    const ans = typeof r === 'number' ? parseFloat(r.toFixed(10)) : r;
+    current = String(ans);
+    historyItems.unshift({ expr: exprStr, ans: current });
+    if (historyItems.length > 5) historyItems.pop();
+    renderHistory();
+    operator = null; prev = null; fresh = true;
+    clearOpHighlight();
+    update();
+  }
+
+  function renderHistory() {
+    if (!historyItems.length) return;
+    histList.innerHTML = historyItems.map(h => `
+      <div class="history-row">
+        <span class="history-expr">${h.expr}</span>
+        <span class="history-ans">${h.ans}</span>
+      </div>`).join('');
+  }
+
+  function setMode(btn, mode) {
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+  }
+
+  // Keyboard support
+  document.addEventListener('keydown', e => {
+    if (e.key >= '0' && e.key <= '9') press(parseInt(e.key));
+    else if (e.key === '.') pressDot();
+    else if (e.key === '+') setOp('+');
+    else if (e.key === '-') setOp('-');
+    else if (e.key === '*') setOp('*');
+    else if (e.key === '/') { e.preventDefault(); setOp('/'); }
+    else if (e.key === 'Enter' || e.key === '=') calculate();
+    else if (e.key === 'Backspace') {
+      if (current.length > 1) current = current.slice(0, -1);
+      else current = '0';
+      update();
+    }
+    else if (e.key === 'Escape') clearAll();
+  });
+</script>
+</body>
+</html>
